@@ -27,6 +27,7 @@ from datetime import datetime
 import random
 import argparse
 from rich import print
+from rich.progress import track
 from distributed import Client, as_completed
 from dask import config
 import polars as pl
@@ -106,7 +107,8 @@ if __name__ == '__main__':
                'start' : 0,
                'stop' : 0,}
 
-        for future in future_itr:
+        for future in track(future_itr, total=args.n,
+                            description='Processing tasks ... '):
             result = future.result()
 
             curr_row = row.copy()
@@ -117,6 +119,7 @@ if __name__ == '__main__':
             output.append(curr_row)
 
     output_df = pl.DataFrame(output)
+    print(f'Writing to {out_file_name}')
     output_df.write_csv(out_file_name)
 
 
