@@ -28,6 +28,7 @@ import random
 import argparse
 from rich import print
 from distributed import Client, as_completed
+from dask import config
 import polars as pl
 
 
@@ -86,6 +87,11 @@ if __name__ == '__main__':
         sequence.sort(reverse=True)
     elif args.sorting == 'ascending':
         sequence.sort()
+
+    if not args.stealing:
+        # Disable task stealing
+        print('Disabling Dask scheduler task stealing.')
+        config.set({'distributed.scheduler.work-stealing': False})
 
     with Client() as client:
         futures = client.map(do_sleep, sequence)

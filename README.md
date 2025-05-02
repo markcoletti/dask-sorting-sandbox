@@ -20,7 +20,7 @@ by time and run with and without task stealing.
 The results for each run will be in a CSV file with these columns:
 
 * order: 'descending', 'ascending', 'none'
-* seconds: [0,30]
+* seconds: [5,20]
 * start time: unix epoch
 * stop time: unix epoch
 
