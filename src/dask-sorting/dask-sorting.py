@@ -71,6 +71,9 @@ if __name__ == '__main__':
                         help='Maximum number of seconds to sort Dask tasks')
     parser.add_argument('--output', type=str,
                         help='Where to write the CSV output')
+    parser.add_argument('--job', type=str,
+                        help='Optional job identifier to be incorporated '
+                             'into CSV output')
     parser.add_argument('n', type=int,
                         help='Number of Dask tasks to randomly generate')
     parser.set_defaults(stealing=True)  # Steal tasks by default
@@ -114,6 +117,9 @@ if __name__ == '__main__':
                'seconds' : 0,
                'start' : 0,
                'stop' : 0,}
+
+        if args.job is not None:
+            row['job'] = args.job
 
         for future in track(future_itr, total=args.n,
                             description='Processing tasks ... '):
