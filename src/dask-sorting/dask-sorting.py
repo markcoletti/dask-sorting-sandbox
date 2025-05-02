@@ -56,9 +56,13 @@ if __name__ == '__main__':
                         default='descending',
                         choices=['descending', 'ascending', 'none'],
                         help='How do we want to sort Dask tasks')
-    parser.add_argument('--stealing', type=bool,
-                        default=True,
-                        help='Do we want Dask stealing or not?')
+    parser.add_argument('--stealing',
+                        action='store_true',
+                        help='We want Dask task stealing')
+    parser.add_argument('--no-stealing',
+                        dest='stealing',
+                        action='store_false',
+                        help='We do not want Dask task stealing')
     parser.add_argument('--minimum', type=int,
                         default=DEFAULT_MINIMUM,
                         help='Minimum number of seconds to sort Dask tasks')
@@ -69,6 +73,7 @@ if __name__ == '__main__':
                         help='Where to write the CSV output')
     parser.add_argument('n', type=int,
                         help='Number of Dask tasks to randomly generate')
+    parser.set_defaults(stealing=True)  # Steal tasks by default
 
     args = parser.parse_args()
 
@@ -93,6 +98,8 @@ if __name__ == '__main__':
         # Disable task stealing
         print('Disabling Dask scheduler task stealing.')
         config.set({'distributed.scheduler.work-stealing': False})
+    else:
+        print('Using default of Dask scheduler task stealing.')
 
     with Client() as client:
         futures = client.map(do_sleep, sequence)
@@ -103,6 +110,7 @@ if __name__ == '__main__':
 
         # What the records will look like
         row = {'order' : args.sorting,
+               'stealing' : args.stealing,
                'seconds' : 0,
                'start' : 0,
                'stop' : 0,}
