@@ -4,9 +4,9 @@
     without task stealing.  Tasks are randomly sleeping for so many seconds.
 
     usage: dask-sorting.py [-h] [--sorting {descending,ascending,none}]
-                       [--stealing STEALING] [--minimum MINIMUM]
-                       [--maximum MAXIMUM] [--output OUTPUT]
-                       n
+                           [--stealing] [--no-stealing] [--minimum MINIMUM]
+                           [--maximum MAXIMUM] [--output OUTPUT] [--job JOB]
+                           n
 
     This performs Dask timing experiments with sorting vs. task stealing.
 
@@ -17,10 +17,13 @@
       -h, --help            show this help message and exit
       --sorting {descending,ascending,none}
                             How do we want to sort Dask tasks
-      --stealing STEALING   Do we want Dask stealing or not?
+      --stealing            We want Dask task stealing
+      --no-stealing         We do not want Dask task stealing
       --minimum MINIMUM     Minimum number of seconds to sort Dask tasks
       --maximum MAXIMUM     Maximum number of seconds to sort Dask tasks
       --output OUTPUT       Where to write the CSV output
+      --job JOB             Optional job identifier to be incorporated into CSV
+                            output
 """
 from time import time, sleep
 from datetime import datetime
