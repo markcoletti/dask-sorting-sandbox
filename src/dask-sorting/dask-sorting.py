@@ -22,11 +22,13 @@
       --maximum MAXIMUM     Maximum number of seconds to sort Dask tasks
       --output OUTPUT       Where to write the CSV output
 """
-from time import time
+from time import time, sleep
 from datetime import datetime
 import random
 import argparse
 from rich import print
+from distributed import Client, as_completed
+import polars as pl
 
 
 DESCRIPTION=\
@@ -36,6 +38,14 @@ This performs Dask timing experiments with sorting vs. task stealing.
 
 DEFAULT_MINIMUM=5 # seconds minimum
 DEFAULT_MAXIMUM=20 # seconds maximum
+
+
+def do_sleep(n):
+    start = time()
+    sleep(n)
+    end = time()
+    return n, start, end
+
 
 
 if __name__ == '__main__':
@@ -68,6 +78,42 @@ if __name__ == '__main__':
         out_file_name = datetime.now().strftime("%Y%m%d_%H%M") + ".csv"
 
     print(args)
+
+    # Generate the random sequence of seconds to sleep
+    sequence = [random.randint(args.minimum, args.maximum) for _ in range(args.n)]
+
+    if args.sorting == 'descending':
+        sequence.sort(reverse=True)
+    elif args.sorting == 'ascending':
+        sequence.sort()
+
+    with Client() as client:
+        futures = client.map(do_sleep, sequence)
+
+        future_itr = as_completed(futures)
+
+        output = [] # We'll append records to this list
+
+        # What the records will look like
+        row = {'order' : args.sorting,
+               'seconds' : 0,
+               'start' : 0,
+               'stop' : 0,}
+
+        for future in future_itr:
+            result = future.result()
+
+            curr_row = row.copy()
+            curr_row['seconds'] = result[0]
+            curr_row['start'] = result[1]
+            curr_row['stop'] = result[2]
+
+            output.append(curr_row)
+
+    output_df = pl.DataFrame(output)
+    output_df.write_csv(out_file_name)
+
+
 
 
 
